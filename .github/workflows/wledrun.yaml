@@ -21,10 +21,10 @@ jobs:
         wget https://github.com/Aircoookie/WLED/archive/refs/heads/main.zip -O /tmp/WLEDtemp/mm.zip
         unzip /tmp/WLEDtemp/mm.zip -d /tmp/WLEDtemp
         find /tmp/WLEDtemp -maxdepth 1 -mindepth 1 -name "*" -type d >> /tmp/WLEDtemp/wledfoldername
-        cd `cat /tmp/WLEDtemp/wledfoldername`
+        cd `/tmp/WLEDtemp/wledfoldername`
         
         # Create config.csv in the temp directory
-        cat <<EOF >/tmp/WLEDtemp/config.csv
+        cat <<EOF >config.csv
         # Name,   Type, SubType, Offset,  Size, Flags
         nvs,      data, nvs,     0x9000,  0x5000,
         otadata,  data, ota,     0xe000,  0x2000,
@@ -34,7 +34,6 @@ jobs:
         coredump, data, coredump,0xFF0000,0x10000,%
         EOF
 
-        # Use the config.csv for board partitions
         echo '[env:custom_build]' >> platformio.ini
         echo 'extends = env:esp32-s3-devkitc-1-n16r8v' >> platformio.ini
         echo 'board_build.partitions = /tmp/WLEDtemp/config.csv' >> platformio.ini
