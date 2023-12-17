@@ -5,7 +5,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -18,6 +17,8 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install --upgrade platformio
+        wget -O $HOME/.platformio/platforms/espressif32/boards/esp32-s3-devkitc-1-n16r8v.json https://raw.githubusercontent.com/platformio/platform-espressif32/deb6aa342245ad7bcb3d9ed69050f203779833ab/boards/esp32-s3-devkitc-1-n16r8v.json 
+
     - name: Run PlatformIO
       run: |
         rm -rf /tmp/WLEDtemp/* || true
@@ -27,13 +28,24 @@ jobs:
         find /tmp/WLEDtemp -maxdepth 1 -mindepth 1 -name "*" -type d >> /tmp/WLEDtemp/wledfoldername
         cd `cat /tmp/WLEDtemp/wledfoldername`
         echo '[env:custom_build]' >>platformio.ini
-        echo 'extends = env:esp32s3dev_8MB_PSRAM_opi' >>platformio.ini
-        echo 'build_flags = ${env:esp32s3dev_8MB_PSRAM_opi.build_flags} ${common.debug_flags} -D WLED_DISABLE_ESPNOW -D WLED_DISABLE_BROWNOUT_DET -D USERMOD_AUDIOREACTIVE' >>platformio.ini
+        echo 'extends = env:esp32-s3-devkitc-1-n16r8v' >>platformio.ini
+        echo 'board_upload.flash_size = 16MB' >>platformio.ini
+        echo 'build_flags = ${env:esp32-s3-devkitc-1-n16r8v.build_flags} ${common.debug_flags} -D WLED_DISABLE_ESPNOW -D WLED_DISABLE_BROWNOUT_DET -D USERMOD_AUDIOREACTIVE' >>platformio.ini
         echo 'lib_deps = ' >>platformio.ini
-        echo '  ${env:esp32s3dev_8MB_PSRAM_opi.lib_deps}' >>platformio.ini
+        echo '  ${env:esp32-s3-devkitc-1-n16r8v.lib_deps}' >>platformio.ini
         echo '  https://github.com/blazoncek/arduinoFFT.git' >>platformio.ini
-        
+        cat <<EOF >./tools/configoverwrite.csv 
+# Name,   Type, SubType, Offset,  Size, Flags
+nvs,      data, nvs,     0x9000,  0x5000,
+otadata,  data, ota,     0xe000,  0x2000,
+app0,     app,  ota_0,   0x10000, 0x640000,
+app1,     app,  ota_1,   0x650000,0x640000,
+spiffs,   data, spiffs,  0xc90000,0x360000,
+coredump, data, coredump,0xFF0000,0x10000,%
+EOF
+        echo 'board_build.partitions = .tools/configoverwrite.csv' >>platformio.ini 
         pio run -e custom_build || pio run -e custom_build
+
     - name: Copy Files
       run: |
         cd $GITHUB_WORKSPACE
@@ -41,6 +53,7 @@ jobs:
         WLEDFOLDERNAME=`cat /tmp/WLEDtemp/wledfoldername`
         cp ${WLEDFOLDERNAME}/build_output/firmware/custom_build.bin $GITHUB_WORKSPACE/
         date -I | tr -d '\n' >$GITHUB_WORKSPACE/last_update_date.txt
+
     - name: Commit Files
       run: |
         cd $GITHUB_WORKSPACE
