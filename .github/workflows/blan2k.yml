@@ -13,11 +13,20 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: 3.9
-
-    - name: Install PlatformIO
+    - name: Install PlatformIO and Download Board Configuration
       run: |
         python -m pip install --upgrade pip
         pip install --upgrade platformio
+        mkdir -p $HOME/.platformio/platforms/espressif32/boards
+        wget -O $HOME/.platformio/platforms/espressif32/boards/esp32-s3-devkitc-1-n16r8v.json https://raw.githubusercontent.com/platformio/platform-espressif32/deb6aa342245ad7bcb3d9ed69050f203779833ab/boards/esp32-s3-devkitc-1-n16r8v.json 
+      env:
+        pythonLocation: /opt/hostedtoolcache/Python/3.9.18/x64
+        PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.9.18/x64/lib/pkgconfig
+        Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.9.18/x64
+        Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.9.18/x64
+        Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.9.18/x64
+        LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.9.18/x64/li
+        
     - name: Run PlatformIO
       run: |
         rm -rf /tmp/WLEDtemp/* || true
