@@ -36,10 +36,10 @@ jobs:
         find /tmp/WLEDtemp -maxdepth 1 -mindepth 1 -name "*" -type d >> /tmp/WLEDtemp/wledfoldername
         cd `cat /tmp/WLEDtemp/wledfoldername`
         echo '[env:custom_build]' >>platformio.ini
-        echo 'extends = env:esp32-s3-devkitc-1-n16r8v.' >>platformio.ini
-        echo 'build_flags = ${env:esp32-s3-devkitc-1-n16r8v.build_flags} ${common.debug_flags} -D IRPIN=19 -D USERMOD_AUDIOREACTIVE' >>platformio.ini
+        echo 'extends = env:esp32-s3-devkitc-1-n16r8v' >>platformio.ini
+        echo 'build_flags = ${common.debug_flags} -D IRPIN=19 -D USERMOD_AUDIOREACTIVE' >>platformio.ini
         echo 'lib_deps = ' >>platformio.ini
-        echo '  ${env:esp32-s3-devkitc-1-n16r8v..lib_deps}' >>platformio.ini
+        echo '  ${env:esp32-s3-devkitc-1-n16r8v.lib_deps}' >>platformio.ini
         echo '  https://github.com/blazoncek/arduinoFFT.git' >>platformio.ini
         
         pio run -e custom_build || pio run -e custom_build
